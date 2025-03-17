@@ -119,7 +119,7 @@ def load_agent_gym_dataset():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--local_dir', default='./data/alfworld')
-    parser.add_argument('--steps', default='[1]')
+    parser.add_argument('--steps', default='[1,2,3,4,5]')
     parser.add_argument('--template_type', type=str, default='base')
 
     args = parser.parse_args()
@@ -130,21 +130,38 @@ if __name__ == '__main__':
 
     # raw_dataset = raw_dataset.select(range(10))
 
-    seed(42)
-    raw_dataset = raw_dataset.shuffle()
+    raw_dataset = raw_dataset.shuffle(seed=42)
     train_dataset = raw_dataset.select(range(int(len(raw_dataset) * 0.9)))
     test_dataset = raw_dataset.select(range(int(len(raw_dataset) * 0.9), len(raw_dataset)))
 
+    def is_valid_example(example, step):
+        """检查样本是否有效，避免无效数据进入 map 操作"""
+        conv = example['conversations'][2:]
+        if len(conv) < step * 2:
+            return False 
+        
+        if "Action: " not in conv[-(step * 2) + 1]['value']:
+            return False
+        
+        if step != 1 and "Nothing happens." in conv[-(step * 2) + 2]['value']:
+                return False 
 
-    # TODO: filter some data that turns to Nothing Happen
+        return True  
+    
     def make_map_fn(split, step):
         def process_fn(example):
-            conv = example['conversations'][2:4]
+            conv = example['conversations'][2:]
             if len(conv) < step * 2: 
                 return {}
             question = conv[:-(step * 2) + 1]
-            question = make_question(conv[:-(step * 2) + 1], template_type=args.template_type)
-            solution = make_solu(conv[-(step * 2) + 1])
+            try:
+                question = make_question(conv[:-(step * 2) + 1], template_type=args.template_type)
+                solution = make_solu(conv[-(step * 2) + 1])
+                # 如果"Nothing happens."在 solution 的后一句，就不要这个数据(首先后一句要存在)
+                if step != 1 and "Nothing happens." in conv[-(step * 2) + 2]['value']:
+                    return {}
+            except Exception as e:
+                return {}
             data = {
                 "data_source": data_source,
                 "prompt": [{
@@ -163,23 +180,33 @@ if __name__ == '__main__':
             }
             return data
         return process_fn
-    steps = eval(args.steps)
+    # steps = eval(args.steps)
+    steps = [i for i in range(1, 51)]
+
     all_train_dataset = Dataset.from_dict({})
     all_test_dataset = Dataset.from_dict({})
     for step in steps:
-        train_mapped = train_dataset.map(
+        filtered_train_dataset = train_dataset.filter(lambda x: is_valid_example(x, step))
+        filtered_test_dataset = test_dataset.filter(lambda x: is_valid_example(x, step))
+
+        train_mapped = filtered_train_dataset.map(
             function=make_map_fn('train', step),
-            remove_columns=train_dataset.column_names,
-        ).filter(lambda x: len(x) > 0)
-        test_mapped = test_dataset.map(
-            make_map_fn('test', step),
-            remove_columns=test_dataset.column_names,
-        ).filter(lambda x: len(x) > 0)
+            remove_columns=filtered_train_dataset.column_names,
+        )
+
+        test_mapped = filtered_test_dataset.map(
+            function=make_map_fn('test', step),
+            remove_columns=filtered_test_dataset.column_names,
+        )
 
         all_train_dataset = concatenate_datasets([all_train_dataset, train_mapped])
         all_test_dataset = concatenate_datasets([all_test_dataset, test_mapped])
 
     local_dir = args.local_dir
+
+    # 输出数据集大小
+    print(f"train_dataset size: {len(all_train_dataset)}")
+    print(f"test_dataset size: {len(all_test_dataset)}")
 
     # 保存为parquet格式
     all_train_dataset.to_parquet(os.path.join(local_dir, 'train.parquet'))
