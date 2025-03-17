@@ -139,7 +139,7 @@ if __name__ == '__main__':
     # TODO: filter some data that turns to Nothing Happen
     def make_map_fn(split, step):
         def process_fn(example):
-            conv = example['conversations'][2:]
+            conv = example['conversations'][2:4]
             if len(conv) < step * 2: 
                 return {}
             question = conv[:-(step * 2) + 1]
@@ -186,5 +186,5 @@ if __name__ == '__main__':
     all_test_dataset.to_parquet(os.path.join(local_dir, 'test.parquet'))
 
     # 保存为 json 格式
-    # all_train_dataset.to_json(os.path.join(local_dir, 'train.json'))
-    # all_test_dataset.to_json(os.path.join(local_dir, 'test.json'))
+    all_train_dataset.to_json(os.path.join(local_dir, 'train.json'))
+    all_test_dataset.to_json(os.path.join(local_dir, 'test.json'))
