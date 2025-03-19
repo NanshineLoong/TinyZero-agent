@@ -23,18 +23,20 @@ def make_prefix(template_type):
 For each of your turn, you will be given the observation of the last turn. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Your output must strictly follow this format: "<think> your thoughts </think>\n<action> your next action </action>".
 
 The available actions are:
-1. go to {{recep}}
-2. take {{obj}} from {{recep}}
-3. put {{obj}} in/on {{recep}}
-4. open {{recep}}
-5. close {{recep}}
-6. toggle {{obj}} {{recep}}
-7. clean {{obj}} with {{recep}}
-8. heat {{obj}} with {{recep}}
-9. cool {{obj}} with {{recep}}
-10. use {{obj}}
-11. inventory
-where {{obj}} and {{recep}} correspond to objects and receptacles.
+1.look:                             look around your current location
+2.inventory:                        check your current inventory
+3.go to (receptacle):               move to a receptacle
+4.open (receptacle):                open a receptacle
+5.close (receptacle):               close a receptacle
+6.take (object) from (receptacle):  take an object from a receptacle
+7.move (object) to (receptacle):    place an object in or on a receptacle
+8.examine (something):              examine a receptacle or an object
+9.use (object):                     use an object
+10.heat (object) with (receptacle):  heat an object using a receptacle
+11.clean (object) with (receptacle): clean an object using a receptacle
+12.cool (object) with (receptacle):  cool an object using a receptacle
+13.slice (object) with (object):     slice an object using a sharp object
+
 After your each turn, the environment will give you immediate feedback based on which you plan your next few steps. if the envrionment output "Nothing happened", that means the previous action is invalid and you should try more options.
 
 Your response should use the following format:
@@ -49,18 +51,20 @@ Interact with a household to solve a task. Imagine you are an intelligent agent 
 For each of your turn, you will be given the observation of the last turn. You should first think about the current condition and plan for your future actions, and then output your action in this turn. Your output must strictly follow this format: "<think> your thoughts </think>\n<action> your next action </action>".
 
 The available actions are:
-1. go to {{recep}}
-2. take {{obj}} from {{recep}}
-3. put {{obj}} in/on {{recep}}
-4. open {{recep}}
-5. close {{recep}}
-6. toggle {{obj}} {{recep}}
-7. clean {{obj}} with {{recep}}
-8. heat {{obj}} with {{recep}}
-9. cool {{obj}} with {{recep}}
-10. use {{obj}}
-11. inventory
-where {{obj}} and {{recep}} correspond to objects and receptacles.
+1.look:                             look around your current location
+2.inventory:                        check your current inventory
+3.go to (receptacle):               move to a receptacle
+4.open (receptacle):                open a receptacle
+5.close (receptacle):               close a receptacle
+6.take (object) from (receptacle):  take an object from a receptacle
+7.move (object) to (receptacle):    place an object in or on a receptacle
+8.examine (something):              examine a receptacle or an object
+9.use (object):                     use an object
+10.heat (object) with (receptacle):  heat an object using a receptacle
+11.clean (object) with (receptacle): clean an object using a receptacle
+12.cool (object) with (receptacle):  cool an object using a receptacle
+13.slice (object) with (object):     slice an object using a sharp object
+
 After your each turn, the environment will give you immediate feedback based on which you plan your next few steps. if the envrionment output "Nothing happened", that means the previous action is invalid and you should try more options.
 
 Your response should use the following format:
